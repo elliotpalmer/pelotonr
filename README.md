@@ -1,4 +1,4 @@
-# pelatonr
+# pelotonr
 
 The goal of pelatonr is to make accessing your data from the Pelaton cycling API easy. 
 
@@ -9,17 +9,19 @@ https://github.com/AnfieldWest/Peloton-using-R
 
 I only have the Pelaton Bike and not the Treadmill. So, I am only able to accurately get data for the bike from my profile. I more than welcome other Pelaton / Data Junkies to submit PR to add additional functionality for the Tread.
 
+This library has no connection or sponsorship from Peloton and I make no presumption that the data here is without error.
+
 ## Example
 
 ``` r
 devtools::github_install("epalmer/pelatonr")
 
 # Username and Password Credentials to Log-in to Pelaton Profile
-username <- "your.pelaton.username"
-password <- "your.pelaton.password"
+username <- "your.peloton.username"
+password <- "your.peloton.password"
 
 # Find this in your user profile. More detailed instructions below
-userid <- "you.pelaton.userid"
+userid <- "you.peloton.userid"
 
 # Need this to access data from the API
 peloton_cookie <- get_peloton_cookie(username, password)
