@@ -1,6 +1,18 @@
 
 # VARIABLES -------------------------------------------------------
 
+#' Function for storing api urls
+#'
+#' Allows for storing API urls in one place for calling in other functions
+#'
+#' @param NULL
+#'
+#' @return a list containing the Peloton API urls
+#'
+#' @examples
+#' get_peloton_urls()
+#'
+#' @export
 get_peloton_urls <- function(){
   list(
     base.url  = "https://api.pelotoncycle.com/api/",
@@ -8,21 +20,56 @@ get_peloton_urls <- function(){
   )
 }
 
+#' Get API url for a specific user id
+#'
+#' @param userid a string, the user id found in your Peloton profile
+#'
+#' @return the user workout API call
+#'
+#' @examples
+#' user_id <- '44e4b4f4c14434444a4f554444a44bde4'
+#' get_workout_url(user_id)
+#'
+#' @export
 get_workout_url <- function(userid){
   urls <- get_peloton_urls()
   paste0(urls$base.url, "user/", userid, "/workouts?joins=peloton.ride&limit=1000")
 }
 
-# AUTH / LOGIN ------------------------------------------------------------
-
-parse_credentials_to_cookie <- function(credentials){
-  headers <- credentials$headers
-  peloton_session_string <- headers[grepl("peloton_session_id", headers)][[1]]
-  peloton_session_string <- strsplit(peloton_session_string, ";")[[1]][1]
-  peloton_cookie <- strsplit(peloton_session_string, "=")[[1]][2]
-  return(peloton_cookie)
+#' Get API url for a workout's stream data
+#'
+#' @param workout_id a string of and individial workout id
+#' @param time_offset_interval
+#'
+#' @return the user workout stream API call
+#'
+#' @examples
+#' workout_id <- '44e4b4f4c14434444a4f554444a44bde4'
+#' get_workout_stream_url(user_id)
+#'
+#' @export
+get_workout_stream_url <- function(workout_id, time_offset_interval = 1){
+  urls <- get_peloton_urls()
+  stream_url <- sprintf(paste0(urls$base.url,
+                               "workout/%s/performance_graph?every_n=",
+                               time_offset_interval),workout_id)
+  return(stream_url)
 }
 
+# AUTH / LOGIN ------------------------------------------------------------
+
+#' Return a cookie string after authenticating with the Peloton API
+#'
+#' @param username a string, your Peloton account username
+#' @param password a string, your Peloton account password
+#'
+#' @return a string, the cookie id
+#'
+#' @examples
+#'
+#' get_peloton_cookie('username','password')
+#'
+#' @export
 get_peloton_cookie <- function(username, password){
   urls <- get_peloton_urls()
 
@@ -33,8 +80,38 @@ get_peloton_cookie <- function(username, password){
   parse_credentials_to_cookie(credentials)
 }
 
+#' Helper function that parses the cookie id from JSON
+#'
+#' @param credentials JSON, the returned json from the API after authentication
+#'
+#' @return a string, cookie id
+#'
+#' @examples
+#' parse_credentials_to_cookie(credentials)
+#'
+#' @export
+parse_credentials_to_cookie <- function(credentials){
+  headers <- credentials$headers
+  peloton_session_string <- headers[grepl("peloton_session_id", headers)][[1]]
+  peloton_session_string <- strsplit(peloton_session_string, ";")[[1]][1]
+  peloton_cookie <- strsplit(peloton_session_string, "=")[[1]][2]
+  return(peloton_cookie)
+}
+
 # USER DATA ---------------------------------------------------------------
 
+#' Get User data from the Peloton API
+#'
+#' Includes data on User, workout counts, and workout streaks
+#'
+#' @param userid a string, the user id found in your Peloton profile
+#'
+#' @return a list, includes 3 data sets, base user data, workout counts and streaks
+#'
+#' @examples
+#' get_peloton_user_data(user_id)
+#'
+#' @export
 get_peloton_user_data <- function(userid){
   urls <- get_peloton_urls()
   json_user <- jsonlite::fromJSON(paste0(urls$base.url, "user/", userid))
@@ -46,6 +123,20 @@ get_peloton_user_data <- function(userid){
   )
 }
 
+#' Parses user json to return base user data
+#'
+#'
+#' @param json_user JSON, json return from the user API call
+#'
+#' @return a dataframe
+#'
+#' @examples
+#' user_id '5749258a9eb4389fbe23821'
+#' urls <- get_peloton_urls()
+#' json_user <- jsonlite::fromJSON(paste0(urls$base.url, "user/", userid))
+#' parse_base_user_data(json_user)
+#'
+#' @export
 parse_base_user_data <- function(json_user){
   base_columns <- c("id", "username", "location", "total_workouts",
                     "total_non_pedaling_metric_workouts", "last_workout_at",
@@ -58,10 +149,36 @@ parse_base_user_data <- function(json_user){
   return(base_user)
 }
 
+#' Parses user json to return workout counts
+#'
+#' @param json_user JSON, json return from the user API call
+#'
+#' @return a dataframe
+#'
+#' @examples
+#' user_id '5749258a9eb4389fbe23821'
+#' urls <- get_peloton_urls()
+#' json_user <- jsonlite::fromJSON(paste0(urls$base.url, "user/", userid))
+#' parse_peloton_workout_counts(json_user)
+#'
+#' @export
 parse_peloton_workout_counts <- function(json_user){
   data.frame(do.call(cbind, json_user$workout_counts))
 }
 
+#' Parses user json to return streaks
+#'
+#' @param json_user JSON, json return from the user API call
+#'
+#' @return a dataframe
+#'
+#' @examples
+#' user_id '5749258a9eb4389fbe23821'
+#' urls <- get_peloton_urls()
+#' json_user <- jsonlite::fromJSON(paste0(urls$base.url, "user/", userid))
+#' parse_peloton_streaks(json_user)
+#'
+#' @export
 parse_peloton_streaks <- function(json_user){
   streak_data <- data.frame(do.call(cbind, json_user$streaks))
   streak_data$start_date_of_current_weekly <- .parse_date(streak_data$start_date_of_current_weekly)
@@ -71,6 +188,19 @@ parse_peloton_streaks <- function(json_user){
 
 # WORKOUT STATS -----------------------------------------------------------
 
+#' Return a data frame of workout data
+#'
+#' @param userid a string, the user id found in your Peloton profile
+#' @param peloton_cookie a string, a cookie id
+#'
+#' @return a dataframe
+#'
+#' @examples
+#' userid <-  '5749258a9eb4389fbe23821'
+#' peloton_cookie <- get_peloton_cookie(username, password)
+#' get_peloton_workout_detail(userid, peloton_cookie)
+#'
+#' @export
 get_peloton_workout_detail <- function(userid, peloton_cookie){
   workout_url <- get_workout_url(userid)
   workouts_json <- get_workout_detail_json(workout_url, peloton_cookie)
@@ -91,6 +221,15 @@ get_peloton_workout_detail <- function(userid, peloton_cookie){
 
 }
 
+#' A helper function to join the individual workout dataframes
+#'
+#' @param workouts_data a list of dataframes
+#'
+#' @return a dataframe
+#'
+#' @examples
+#'
+#' @export
 combine_workout_data <- function(workouts_data){
 
   workout_data <- merge(
@@ -123,6 +262,16 @@ combine_workout_data <- function(workouts_data){
   return(unique(workout_data))
 }
 
+#' Returns the json for the workout detail, requires authentication
+#'
+#' @param workout_url a string, generated from the get_workout_url() function
+#' @param peloton_cookie a string, cookie id
+#'
+#' @return JSON
+#'
+#' @examples
+#'
+#' @export
 get_workout_detail_json <- function(workout_url, peloton_cookie){
 
   response <- httr::GET(workout_url, set_cookies(peloton_session_id = peloton_cookie))
@@ -132,6 +281,15 @@ get_workout_detail_json <- function(workout_url, peloton_cookie){
 
 }
 
+#' Returns ride stats data frame
+#'
+#' @param workouts_json a string, generated from the get_workout_url() function
+#'
+#' @return a dataframe
+#'
+#' @examples
+#'
+#' @export
 parse_ride_stats <- function(workouts_json){
   ride_stats_data <- as.data.frame(do.call(cbind, workouts_json$data$peloton$ride))
   ride_stat_columns <- c('id', 'series_id', 'ride_type_id', 'instructor_id', 'duration', 'pedaling_duration',
@@ -144,6 +302,15 @@ parse_ride_stats <- function(workouts_json){
   ride_stats_data <- as.data.frame(lapply(ride_stats_data, unlist), stringsAsFactors = FALSE)
 }
 
+#' Returns user workouts data frame
+#'
+#' @param workouts_json a string, generated from the get_workout_url() function
+#'
+#' @return a dataframe
+#'
+#' @examples
+#'
+#' @export
 parse_user_workouts <- function(workouts_json){
   user_workouts <- as.data.frame(do.call(cbind, workouts_json$data))
   user_workouts_columns <- c('user_id', 'id', 'strava_id', 'fitbit_id', 'name', 'workout_type',
@@ -225,14 +392,6 @@ get_peloton_workout_streams <- function(workout_ids, time_offset_interval = 1){
   stream_jsons <- lapply(workout_ids, get_peloton_workout_stream_json)
   stream_data  <- lapply(stream_jsons, parse_peloton_workout_stream)
   do.call(rbind, stream_data)
-}
-
-get_workout_stream_url <- function(workout_id, time_offset_interval = 1){
-  urls <- get_peloton_urls()
-  stream_url <- sprintf(paste0(urls$base.url,
-                               "workout/%s/performance_graph?every_n=",
-                               time_offset_interval),workout_id)
-  return(stream_url)
 }
 
 get_peloton_workout_stream_json <- function(workout_id, time_offset_interval = 1){

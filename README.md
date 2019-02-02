@@ -39,4 +39,3 @@ cycling_workout_ids <- workouts_data[workouts_data$fitness_discipline == "cyclin
   
 stream_data <- get_peloton_workout_streams(cycling_workout_ids)
 ```
-
