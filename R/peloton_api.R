@@ -330,11 +330,13 @@ parse_user_workouts <- function(workouts_json){
 
 # WORKOUT SUMMARY ---------------------------------------------------------
 
+#' @export
 get_workout_summary_json <- function(workout_ids){
   urls <- get_peloton_urls()
   lapply(sprintf(paste0(urls$base.url, "workout/%s/summary"), workout_ids),jsonlite::fromJSON)
 }
 
+#' @export
 parse_workout_summary <- function(workout_summary_json){
   workout_summary_data <- as.data.frame(do.call(rbind, workout_summary_json))
   workout_summary_columns <- c('workout_id', 'ride_id', 'avg_power', 'avg_cadence', 'avg_resistance',
@@ -349,6 +351,7 @@ parse_workout_summary <- function(workout_summary_json){
 
 # ACHIEVEMENTS ------------------------------------------------------------
 
+#' @export
 get_achievements_json <- function(workout_ids){
   urls <- get_peloton_urls()
   achievements_urls <- sprintf(paste0(urls$base.url, "workout/%s"), workout_ids)
@@ -356,6 +359,7 @@ get_achievements_json <- function(workout_ids){
   return(achievements_json)
 }
 
+#' @export
 parse_leaderboard_rank <- function(achievements_json){
   leaderboard_data <- as.data.frame(do.call(rbind, achievements_json))
   leaderboard_columns <- c("id", "leaderboard_rank")
@@ -365,6 +369,7 @@ parse_leaderboard_rank <- function(achievements_json){
   return(leaderboard_data)
 }
 
+#' @export
 parse_achievements_list <- function(achievements_json){
   achievement_list_data <- as.data.frame(do.call(rbind, achievements_json))
   achievement_list_columns <- c("id", "achievement_templates")
@@ -374,6 +379,7 @@ parse_achievements_list <- function(achievements_json){
   return(achievement_list_data)
 }
 
+#' @export
 parse_achievements <- function(achievements_json){
   achievements_list <- parse_achievements_list(achievements_json)
   templates <- achievements_list$achievement_templates
@@ -388,12 +394,14 @@ parse_achievements <- function(achievements_json){
 
 # STREAM ------------------------------------------------------------------
 
+#' @export
 get_peloton_workout_streams <- function(workout_ids, time_offset_interval = 1){
   stream_jsons <- lapply(workout_ids, get_peloton_workout_stream_json)
   stream_data  <- lapply(stream_jsons, parse_peloton_workout_stream)
   do.call(rbind, stream_data)
 }
 
+#' @export
 get_peloton_workout_stream_json <- function(workout_id, time_offset_interval = 1){
   stream_url <- get_workout_stream_url(workout_id, time_offset_interval)
   stream_json <- jsonlite::fromJSON(stream_url)
@@ -401,6 +409,7 @@ get_peloton_workout_stream_json <- function(workout_id, time_offset_interval = 1
   return(stream_json)
 }
 
+#' @export
 parse_peloton_workout_stream <- function(stream_json){
   stream_data <- merge(
     parse_all_seconds(stream_json),
@@ -415,6 +424,7 @@ parse_peloton_workout_stream <- function(stream_json){
   return(stream_data)
 }
 
+#' @export
 parse_segment_list <- function(stream_json){
   segment_list_columns <- c("name","start_time_offset", "length", "intensity_in_mets")
   segment_list <- stream_json$segment_list[,segment_list_columns]
@@ -422,6 +432,7 @@ parse_segment_list <- function(stream_json){
   return(segment_list)
 }
 
+#' @export
 parse_all_seconds <- function(stream_json){
   seconds <- 0:stream_json$duration
   segment_list <- parse_segment_list(stream_json)[,c("name","start_time_offset", "end_time_offset")]
@@ -448,6 +459,7 @@ parse_all_seconds <- function(stream_json){
   return(all_seconds_data)
 }
 
+#' @export
 parse_stream_values <- function(stream_json){
   values <- stream_json$metrics$values
   names(values) <- stream_json$metrics$display_name
