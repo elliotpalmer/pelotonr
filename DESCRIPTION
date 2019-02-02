@@ -1,4 +1,4 @@
-Package: pelatonr
+Package: pelotonr
 Version: 0.0.0.9000
 Title: Connect to and gather data from the Pelaton cycling API
 Description: What the package does (one paragraph).
