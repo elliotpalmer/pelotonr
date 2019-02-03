@@ -198,10 +198,10 @@ parse_peloton_streaks <- function(json_user){
 #' @examples
 #' userid <-  '5749258a9eb4389fbe23821'
 #' peloton_cookie <- get_peloton_cookie(username, password)
-#' get_peloton_workout_detail(userid, peloton_cookie)
+#' get_peloton_workout_data(userid, peloton_cookie)
 #'
 #' @export
-get_peloton_workout_detail <- function(userid, peloton_cookie){
+get_peloton_workout_data <- function(userid, peloton_cookie){
   workout_url <- get_workout_url(userid)
   workouts_json <- get_workout_detail_json(workout_url, peloton_cookie)
   workout_ids <- workouts_json$data$id
@@ -395,7 +395,7 @@ parse_achievements <- function(achievements_json){
 # STREAM ------------------------------------------------------------------
 
 #' @export
-get_peloton_workout_streams <- function(workout_ids, time_offset_interval = 1){
+get_peloton_stream_data <- function(workout_ids, time_offset_interval = 1){
   stream_jsons <- lapply(workout_ids, get_peloton_workout_stream_json)
   stream_data  <- lapply(stream_jsons, parse_peloton_workout_stream)
   do.call(rbind, stream_data)
@@ -492,4 +492,3 @@ parse_stream_values <- function(stream_json){
   cart_join[gtet_lb & lt_ub,!(names(cart_join) %in% c(btwn_lb, btwn_ub))]
 }
 
-# TESTING -----------------------------------------------------------------

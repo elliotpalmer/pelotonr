@@ -35,7 +35,7 @@ workouts_data <- get_peloton_workout_detail(userid, peloton_cookie)
 # Stream Data: 
 # Note: Floor workouts generally don't have stream info. Future enhancements may include handling for this
 
-cycling_workout_ids <- workout_data[workout_data$fitness_discipline == "cycling", "workout_id"]
+cycling_workout_ids <- workouts_data[workouts_data$fitness_discipline == "cycling", "workout_id"]
   
 stream_data <- get_peloton_workout_streams(cycling_workout_ids)
 ```
