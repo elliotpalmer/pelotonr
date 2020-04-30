@@ -235,7 +235,7 @@ combine_workout_data <- function(workouts_data){
   workout_data <- merge(
     workouts_data$ride_stats,
     workouts_data$workout_summary,
-    by = "ride_id")
+    by = "workout_id")
 
   workout_data <- merge(
     workout_data,
@@ -274,7 +274,7 @@ combine_workout_data <- function(workouts_data){
 #' @export
 get_workout_detail_json <- function(workout_url, peloton_cookie){
 
-  response <- httr::GET(workout_url, set_cookies(peloton_session_id = peloton_cookie))
+  response <- httr::GET(workout_url, httr::set_cookies(peloton_session_id = peloton_cookie))
   response <- httr::content(response, "text")
   response <- jsonlite::fromJSON(response, simplifyDataFrame = TRUE)
   return(response)
@@ -339,7 +339,7 @@ get_workout_summary_json <- function(workout_ids){
 #' @export
 parse_workout_summary <- function(workout_summary_json){
   workout_summary_data <- as.data.frame(do.call(rbind, workout_summary_json))
-  workout_summary_columns <- c('workout_id', 'ride_id', 'avg_power', 'avg_cadence', 'avg_resistance',
+  workout_summary_columns <- c('workout_id', 'id', 'avg_power', 'avg_cadence', 'avg_resistance',
                                'avg_speed', 'avg_heart_rate','max_power', 'max_cadence',
                                'max_resistance', 'max_speed', 'max_heart_rate', 'distance',
                                'calories', 'seconds_since_pedaling_start')
