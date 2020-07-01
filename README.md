@@ -1,3 +1,8 @@
+# UPDATE 2020-07-01
+Check out the links below for a more complete and polished implementation:
+* https://lgellis.github.io/pelotonR/
+* https://www.littlemissdata.com/blog/pelotonr
+
 # pelotonr
 
 The goal of pelatonr is to make accessing your data from the Pelaton cycling API easy. 
